@@ -46,6 +46,7 @@ namespace WEBAPISwagger2
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             var swaggerOption = new SwaggerOption();
             Configuration.GetSection(nameof(SwaggerOption)).Bind(swaggerOption);
             app.UseSwagger(options => { options.RouteTemplate = swaggerOption.JsonRoute; });

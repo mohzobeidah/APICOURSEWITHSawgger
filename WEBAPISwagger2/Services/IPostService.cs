@@ -8,9 +8,12 @@ namespace WEBAPISwagger2.Services
 {
     public interface IPostService
     {
-        List<Post> GetPostAll();
-        Post GetPostById(string postId);
-        Post PostCreate(Post post);
+       Task <List<Post>> GetPostAllAsync();
+        Task< Post> GetPostByIdAsync(string postId);
+        Task<Post> PostCreateAsync(Post post);
+        Task<bool> PostUpateAsync(Post postUpdate);
+        Task<bool> DeleteAsync(string postId);
+
 
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WEBAPISwagger2.Domain;
 
 namespace WEBAPISwagger2.Data
 {
@@ -13,5 +14,6 @@ namespace WEBAPISwagger2.Data
         {
 
         }
+        public DbSet<Post> posts  { get; set; }
     }
 }

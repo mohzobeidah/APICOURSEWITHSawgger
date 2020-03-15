@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WEBAPISwagger2.Contracts.v1;
@@ -14,30 +16,31 @@ namespace WEBAPISwagger2.Controllers.v1
 {
      
    // [Route("api/[controller]")]
+   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     public class PostsController : ControllerBase
     {
-        public readonly IPostService _IPostService;
+        public readonly IPostService _PostService;
         public PostsController(IPostService IPostService)
         {
-        this._IPostService=IPostService;
+        this._PostService=IPostService;
         }
 
        
 
 
             [HttpGet(ApiRoutes.Posts.GetAll)]
-        public IActionResult GetAll()
+        public async  Task<IActionResult> GetAll()
         {
-            return Ok(_IPostService.GetPostAll());
+            return Ok(await _PostService.GetPostAllAsync());
         }
 
         [HttpGet(ApiRoutes.Posts.Get)]
-        public IActionResult Get([FromRoute]string postId)
+        public async Task<IActionResult> Get([FromRoute]string postId)
         {
             if (string.IsNullOrEmpty(postId))
                 return BadRequest();
-            var post = _IPostService.GetPostById(postId);
+            var post = await _PostService.GetPostByIdAsync(postId);
             if (post == null)
                 return NotFound();
 
@@ -46,7 +49,7 @@ namespace WEBAPISwagger2.Controllers.v1
          }
 
        [HttpPost(ApiRoutes.Posts.Create)]
-        public IActionResult Create([FromBody] PostRequestCreate postRequestCreate)
+        public async Task<IActionResult> CreateAsync([FromBody] PostRequestCreate postRequestCreate)
         {
             
             var post = new Post
@@ -58,7 +61,7 @@ namespace WEBAPISwagger2.Controllers.v1
             if (string.IsNullOrEmpty(post.Id))
                 post.Id = Guid.NewGuid().ToString();
 
-            post =_IPostService.PostCreate(post);
+            post =await _PostService.PostCreateAsync(post);
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
             var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id);
 
@@ -71,5 +74,35 @@ namespace WEBAPISwagger2.Controllers.v1
 
 
         }
-    }
+
+        [HttpPut(ApiRoutes.Posts.Upate)]
+         public async Task<IActionResult> PostAsync ([FromRoute] string postId, [FromBody] UpdtePostRequest updtePostRequest)
+        {
+            var post = new Post
+            {
+                Id = updtePostRequest.Id,
+                Name = updtePostRequest.Name,
+            };
+
+            var updated = await _PostService.PostUpateAsync(post);
+
+            if (updated)
+                return Ok(post);
+
+            return NotFound();
+        }
+        [HttpDelete(ApiRoutes.Posts.Delete)]
+        public async Task<IActionResult> Delete([FromRoute] string postId)
+        {
+            if (string.IsNullOrEmpty(postId))
+            {
+                return  BadRequest();
+            }
+            if (await _PostService.DeleteAsync(postId))
+                return NoContent();
+            else
+             return NotFound();
+            
+        }
+        }
 }
